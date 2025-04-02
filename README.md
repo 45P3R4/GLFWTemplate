@@ -6,3 +6,4 @@ GLFW + OpenGL 3.3 + GLAD
 - opengl Core 3.3
 - glfw
 - cglm 0.9.6
+- stbimage 2.30
