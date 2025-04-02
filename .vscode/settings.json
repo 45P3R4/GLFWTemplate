@@ -6,6 +6,15 @@
         "ranges": "cpp",
         "variant": "cpp",
         "cstdlib": "cpp",
-        "shader.h": "c"
+        "shader.h": "c",
+        "affine-mat.h": "c",
+        "mat4.h": "c",
+        "cube.h": "c",
+        "stb_image.h": "c",
+        "array": "c",
+        "string": "c",
+        "string_view": "c",
+        "span": "c",
+        "glad.h": "c"
     }
 }

@@ -14,11 +14,13 @@ GLuint createShaderProgram()
     // Check for compile time errors
     GLint success;
     GLchar infoLog[512];
+
     glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
+
     if (!success)
     {
         glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED\n");
+        printf("ERROR::SHADER::VERTEX::COMPILATION_FAILED:\n%s", infoLog);
     }
     // Fragment shader
     GLuint fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
@@ -29,7 +31,8 @@ GLuint createShaderProgram()
     if (!success)
     {
         glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n");
+        printf("ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n%s", infoLog);
+        
     }
     // Link shaders
     GLuint shaderProgram = glCreateProgram();

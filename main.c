@@ -1,56 +1,29 @@
 #include <stdio.h>
+// glad
 #include <glad/glad.h>
 // GLFW
 #include <GLFW/glfw3.h>
+// cglm
+#include <cglm/mat4.h>
+#include <cglm/cam.h>
+#include <cglm/affine-mat.h>
+#include <cglm/affine.h>
 
 #include "shader.h"
+#include "cube.h"
 
-#include <cglm/mat4.h>
 
-// Function prototypes
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mode);
 
-// Window dimensions
-const GLuint WIDTH = 800, HEIGHT = 600;
+void windowResizeCallback(GLFWwindow* window, int width, int height);
 
-GLfloat vertices[] = {
-    0.5f,  0.5f, 0.0f,  // Top Right
-    0.5f,  0.0f, 0.0f,  // Bottom Right
-    0.0f,  0.0f, 0.0f,  // Bottom Left
-    0.0f,  0.5f, 0.0f   // Top Left 
-};
-GLuint indices[] = {  // Note that we start from 0!
-   0, 1, 3,  // First Triangle
-   1, 2, 3   // Second Triangle
-};
+GLuint windowWidth = 800, windowHeight = 600;
 
-GLuint VBO, VAO, EBO;
-
-void init()
-{
-    //VAO
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO);
-
-    //EBO
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
-    //VBO
-    glGenBuffers(1, &VBO); //generate 1 buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW); //copy data to buffer
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (GLvoid*)0); // set vertices attrib
-    glEnableVertexAttribArray(0);
-
-}
-
-void display()
-{
-    glDrawArrays(GL_TRIANGLES, 0, 3);
-}
-
+mat4 matrix;
+mat4 perspective;
+mat4 ortho;
+mat4 view;
+mat4 model;
 
 int main()
 {
@@ -61,9 +34,9 @@ int main()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+    glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "LearnOpenGL", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -72,24 +45,42 @@ int main()
     }
 
     glfwSetKeyCallback(window, key_callback);
+    glfwSetWindowSizeCallback(window, windowResizeCallback);
 
     // Define the viewport dimensions
     int width, height;
     glfwGetFramebufferSize(window, &width, &height);  
     glViewport(0, 0, width, height);
-    
-    init();
 
     GLuint shaderProgram = createShaderProgram();
     glUseProgram(shaderProgram);
 
+    
+    GLint projectionLocation = glGetUniformLocation(shaderProgram, "projection");
+    GLint viewLocation = glGetUniformLocation(shaderProgram, "view");
+    GLint modelLocation = glGetUniformLocation(shaderProgram, "model");
 
-    mat4 matrix;
+
+    // matrix = prjection * view * model * local
     glm_mat4_identity(matrix);
-    GLint transformLocation = glGetUniformLocation(shaderProgram, "transform");
+    glm_mat4_identity(view);
+    glm_mat4_identity(model);
+
+    glm_translate(view, (vec3){0, 0, -3});
+    glm_translate(model, (vec3){-0.5, -0.5, -0.5});
+
+    glm_perspective(glm_rad(45.0f), (float)windowWidth/(float)windowHeight, 0.1f, 100.0f, perspective);
+    glm_ortho(-2, 2, -2, 2, 0.1, 100, ortho);
+
 
     // Uncommenting this call will result in wireframe polygons.
     // glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+    float angle = 0;
+    initCube(shaderProgram);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_ALWAYS);
 
     // Game loop
     while (!glfwWindowShouldClose(window))
@@ -98,17 +89,22 @@ int main()
 
         // Render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
 
-        matrix[0][3] += 0.1;
-        glUniformMatrix4fv(transformLocation, 1, GL_FALSE, matrix[0]);
+        angle = 0.01;
+        glm_rotate(view, angle, (vec3){0, 1, 0.3});
+        glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, perspective[0]);
+        glUniformMatrix4fv(viewLocation, 1, GL_FALSE, view[0]);
+        glUniformMatrix4fv(modelLocation, 1, GL_FALSE, model[0]);
         
         // Draw
-        display();
+        drawCube();
 
         glfwSwapBuffers(window);
     }
 
+    glDeleteBuffers(1, &EBO);
+    glDeleteBuffers(1, &VAO);
     glDeleteBuffers(1, &VBO);
     glfwTerminate();
     return 0;
@@ -120,4 +116,9 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
 }
-
+ 
+void windowResizeCallback(GLFWwindow* window, int width, int height)
+{
+    glViewport(0, 0, width, height);
+    glm_perspective(glm_rad(45.0f), (float)width/(float)height, 0.1f, 100.0f, perspective);
+}
