@@ -19,7 +19,6 @@ void windowResizeCallback(GLFWwindow* window, int width, int height);
 
 GLuint windowWidth = 800, windowHeight = 600;
 
-mat4 matrix;
 mat4 perspective;
 mat4 ortho;
 mat4 view;
@@ -36,7 +35,7 @@ int main()
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
     glfwWindowHint(GLFW_RESIZABLE, GL_TRUE);
 
-    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "LearnOpenGL", NULL, NULL);
+    GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "OpenGL", NULL, NULL);
     glfwMakeContextCurrent(window);
 
     if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
@@ -62,7 +61,6 @@ int main()
 
 
     // matrix = prjection * view * model * local
-    glm_mat4_identity(matrix);
     glm_mat4_identity(view);
     glm_mat4_identity(model);
 
@@ -79,6 +77,8 @@ int main()
     float angle = 0;
     initCube(shaderProgram);
 
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_ALWAYS);
 
@@ -92,7 +92,7 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);  
 
         angle = 0.01;
-        glm_rotate(view, angle, (vec3){0, 1, 0.3});
+        glm_rotate(view, angle, (vec3){1, 0.3, 0.1});
         glUniformMatrix4fv(projectionLocation, 1, GL_FALSE, perspective[0]);
         glUniformMatrix4fv(viewLocation, 1, GL_FALSE, view[0]);
         glUniformMatrix4fv(modelLocation, 1, GL_FALSE, model[0]);
@@ -122,3 +122,4 @@ void windowResizeCallback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
     glm_perspective(glm_rad(45.0f), (float)width/(float)height, 0.1f, 100.0f, perspective);
 }
+

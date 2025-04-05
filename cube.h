@@ -10,36 +10,63 @@
 #include "texture.h"
 
 const GLfloat vertices[] = {
+
 //  position     color       texcoord
-/*0*/1, 1, 0,    0, 0, 0,    1, 1,   //    5_________7       //
-/*1*/1, 0, 0,    1, 1, 0,    1, 0,   //   I\        I\       //
-/*2*/0, 0, 0,    1, 1, 0,    0, 0,   //   I  \ 3____I__\ 0   //
-/*3*/0, 1, 0,    0, 0, 0,    0, 1,   //   I___I_____I  I     //
-/*4*/0, 0, 1,    0, 1, 0,    1, 1,   //   4\  I      6 I     //
-/*5*/0, 1, 1,    0, 0, 0,    1, 0,   //      \I________I     //
-/*6*/1, 0, 1,    1, 1, 0,    0, 0,   //       2         1    //
-/*7*/1, 1, 1,    1, 0, 0,    0, 1    //                      //
+//front
+/*0*/ 1, 1, 0,    1, 1, 1,    1, 1,
+/*1*/ 1, 0, 0,    1, 1, 1,    1, 0,
+/*2*/ 0, 0, 0,    1, 1, 1,    0, 0,
+/*3*/ 0, 1, 0,    1, 1, 1,    0, 1,
+//left
+/*4*/ 0, 1, 0,    1, 1, 1,    1, 1,
+/*5*/ 0, 0, 0,    1, 1, 1,    1, 0,
+/*6*/ 0, 0, 1,    1, 1, 1,    0, 0,
+/*7*/ 0, 1, 1,    1, 1, 1,    0, 1,
+//back
+/*8*/ 0, 1, 1,    1, 1, 1,    1, 1,
+/*9*/ 0, 0, 1,    1, 1, 1,    1, 0,
+/*10*/1, 0, 1,    1, 1, 1,    0, 0,
+/*11*/1, 1, 1,    1, 1, 1,    0, 1,
+//right
+/*12*/1, 1, 1,    1, 1, 1,    1, 1,
+/*13*/1, 0, 1,    1, 1, 1,    1, 0,
+/*14*/1, 0, 0,    1, 1, 1,    0, 0,
+/*15*/1, 1, 0,    1, 1, 1,    0, 1,
+//top
+/*16*/1, 1, 1,    1, 1, 1,    1, 1,
+/*17*/1, 1, 0,    1, 1, 1,    1, 0,
+/*18*/0, 1, 0,    1, 1, 1,    0, 0,
+/*19*/0, 1, 1,    1, 1, 1,    0, 1,
+//bottom
+/*20*/1, 0, 0,    1, 1, 1,    1, 1,
+/*21*/1, 0, 1,    1, 1, 1,    1, 0,
+/*22*/0, 0, 1,    1, 1, 1,    0, 0,
+/*23*/0, 0, 0,    1, 1, 1,    0, 1,
 };
 
 const GLuint indices[] = {
-   0, 1, 3,
+   0, 1, 3, //front
    1, 2, 3,
-   3, 2, 5,
-   2, 4, 5,
-   5, 4, 7,
-   4, 6, 7,
-   7, 6, 0,
-   6, 1, 0,
-   7, 0, 5,
-   0, 3, 5,
-   6, 1, 4,
-   1, 2, 4
+
+   4, 5, 7, //left
+   5, 6, 7,
+
+   8, 9, 11, //back
+   9, 10, 11,
+
+   12, 13, 15, // right
+   13, 14, 15,
+
+   16, 17, 19, //up
+   17, 18, 19,
+
+   20, 21, 23, //down
+   21, 22, 23
 };
 
 GLuint VBO, VAO, EBO;
 
 unsigned int texture;
-
 
 
 void initCube(GLuint shaderProgram )
@@ -63,19 +90,19 @@ void initCube(GLuint shaderProgram )
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
     glEnableVertexAttribArray(2);
 
     texture = loadTexture("textures/test.png");
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, texture);
 
 }
 
 void drawCube()
 {
-    glActiveTexture(GL_TEXTURE0);  // Активируем слот 0
-    glBindTexture(GL_TEXTURE_2D, texture); // Привязываем текстуру
-    glDrawElements(GL_TRIANGLES, 32, GL_UNSIGNED_INT, 0);
-    
+    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
 }
 
 #endif /* CUBE */
